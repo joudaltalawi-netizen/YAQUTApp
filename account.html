@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دفتر العملاء والحسابات</title>
+    <style>
+        :root {
+            --bg: #161618;
+            --card: #212123;
+            --input-bg: #2d2d30;
+            --text: #fff;
+            --green: #28a745;
+            --red: #dc3545;
+            --blue: #2188ff;
+        }
+
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            padding: 0;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* الشريط العلوي */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 10px 20px;
+            background: #101012;
+        }
+
+        .title {
+            color: var(--green);
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-green { background: var(--green); }
+        .btn-red { background: var(--red); }
+
+        /* منطقة البحث والإضافة */
+        .add-search-section {
+            background: var(--card);
+            border-radius: 0;
+            padding: 10px;
+            margin-bottom: 5px;
+        }
+
+        .fields-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .field {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .field input {
+            width: 100%;
+            background: var(--input-bg);
+            border: none;
+            outline: none;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        .field input:focus { border: 2px solid var(--green); }
+
+        .btn-add {
+            background: var(--green);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* لاحظ: الخانات تم جعلها بشكل أفقي أكثر لتسهيل استخدام Enter */
+        .focus-input {
+            width: 100%;
+            background: var(--input-bg);
+            border: none;
+            outline: none;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .search-box {
+            margin-top: 10px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: var(--input-bg);
+            border: none;
+            outline: none;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        /* الجدول */
+        .table-section {
+            background: var(--card);
+            border-radius: 0;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #1a1a1c;
+            color: #aaa;
+            padding: 10px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #2a2a2c;
+            font-size: 13px;
+        }
+
+        /* نافذة الزبون */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: var(--card);
+            width: 100%;
+            max-width: 100%;
+            padding: 10px;
+            border-radius: 0;
+            overflow-y: auto;
+            max-height: 100%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 5px 15px;
+            background: #101012;
+        }
+
+        .modal-name {
+            font-size: 22px;
+            color: var(--green);
+            font-weight: bold;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        /* شريط الأرصدة */
+        .balances {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #2a2a2c;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .balance-item { text-align: center; flex: 1; }
+        .balance-label { font-size: 12px; color: #aaa; }
+        .balance-amount { font-size: 18px; font-weight: bold; }
+
+        /* الإدخال الداخلي */
+        .entry-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .entry-field {
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .entry-field input, .entry-field select {
+            width: 100%;
+            background: var(--input-bg);
+            border: none;
+            outline: none;
+            color: #fff;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .add-btn {
+            background: var(--green);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* البحث بالتاريخ (يوم واحد) */
+        .date-search {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 8px;
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .date-search input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 13px;
+        }
+
+        .date-search label {
+            font-size: 11px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الشريط العلوي -->
+    <div class="top-bar">
+        <div class="title">💼 دفتر العملاء والحسابات</div>
+        <div class="actions">
+            <button class="btn btn-red" onclick="exportData()">حفظ نسخة</button>
+            <button class="btn btn-green" onclick="importData()">تحميل نسخة</button>
+        </div>
+    </div>
+
+    <!-- منطقة إضافة زبون + بحث (نفس المكان، واضح) -->
+    <div class="add-search-section">
+        <div class="fields-row">
+            <div class="field">
+                <input type="text" id="clientName" placeholder="اسم الزبون">
+            </div>
+            <button class="btn-add" onclick="addClient()">إضافة زبون</button>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 البحث عن زبون...">
+        </div>
+    </div>
+
+    <!-- جدول العملاء -->
+    <div class="table-section">
+        <table>
+            <thead>
+                <tr>
+                    <th>اسم الزبون</th>
+                    <th>تاريخ الإضافة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="clientsTable"></tbody>
+        </table>
+    </div>
+
+    <!-- نافذة الزبون -->
+    <div class="modal" id="clientModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-name" id="modalClientName"></span>
+                <button class="btn-close" onclick="closeModal()">✖</button>
+            </div>
+
+            <div class="balances">
+                <div class="balance-item">
+                    <div class="balance-label">لنا (دولار)</div>
+                    <div class="balance-amount" id="balanceForUsDollar" style="color: var(--green);">0</div>
+                </div>
+                <div class="balance-item">
+                    <div class="balance-label">له (دولار)</div>
+                    <div class="balance-amount" id="balanceForThemDollar" style="color: var(--red);">0</div>
+                </div>
+                <div class="balance-item">
+                    <div class="balance-label">لنا (سوري)</div>
+                    <div class="balance-amount" id="balanceForUsSyrian" style="color: var(--green);">0</div>
+                </div>
+                <div class="balance-item">
+                    <div class="balance-label">له (سوري)</div>
+                    <div class="balance-amount" id="balanceForThemSyrian" style="color: var(--red);">0</div>
+                </div>
+                <div class="balance-item">
+                    <div class="balance-label">الإجمالي (دولار)</div>
+                    <div class="balance-amount" id="balanceTotalDollar">0</div>
+                </div>
+                <div class="balance-item">
+                    <div class="balance-label">الإجمالي (سوري)</div>
+                    <div class="balance-amount" id="balanceTotalSyrian">0</div>
+                </div>
+            </div>
+
+            <!-- إدخال ملاحظة -->
+            <div class="entry-row">
+                <div class="entry-field">
+                    <input type="date" id="txnDate" placeholder="التاريخ">
+                </div>
+                <div class="entry-field">
+                    <input type="text" id="txnNotes" placeholder="ملاحظة فقط" style="flex: 2;">
+                </div>
+                <button class="add-btn" onclick="addPureNote()">ملاحظة</button>
+            </div>
+
+            <!-- إدخال المبالغ (دولار + سوري) -->
+            <div class="entry-row">
+                <div class="entry-field">
+                    <input type="number" id="txnAmountDollar" placeholder="دولار">
+                </div>
+                <div class="entry-field">
+                    <select id="txnTypeDollar">
+                        <option value="forUs">لنا</option>
+                        <option value="forThem">له</option>
+                    </select>
+                </div>
+                <div class="entry-field">
+                    <input type="number" id="txnAmountSyrian" placeholder="سوري">
+                </div>
+                <div class="entry-field">
+                    <select id="txnTypeSyrian">
+                        <option value="forUs">لنا</option>
+                        <option value="forThem">له</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- البحث بالتاريخ (يوم واحد) -->
+            <div class="date-search">
+                <label>بحث بتاريخ:</label>
+                <input type="date" id="searchDate">
+                <button class="btn btn-green" onclick="filterBySingleDate()">بحث</button>
+                <button class="btn btn-red" onclick="resetDateFilter()">إلغاء</button>
+            </div>
+
+            <!-- جدول الحركات -->
+            <div class="table-section" style="margin-top: 10px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>المبلغ</th>
+                            <th>نوع العملة</th>
+                            <th>نوع المبلغ</th>
+                            <th>ملاحظات</th>
+                            <th>حذف</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let appData = {
+            clients: []
+        };
+
+        let currentClientName = "";
+        let isFiltered = false;
+        let filterDate = "";
+
+        function formatNumber(num) {
+            return num.toLocaleString('en-US');
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(appData);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "workbook.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
+            fileInput.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = event => {
+                    appData = JSON.parse(event.target.result);
+                    renderClientsTable();
+                };
+                reader.readAsText(file);
+            };
+            fileInput.click();
+        }
+
+        // إضافة زبون
+        function addClient() {
+            const name = document.getElementById('clientName').value.trim();
+            if (!name) return;
+
+            if (appData.clients.some(c => c.name === name)) {
+                alert("هذا الزبون موجود مسبقاً!");
+                return;
+            }
+
+            appData.clients.push({
+                name: name,
+                date: new Date().toLocaleDateString(),
+                transactions: []
+            });
+
+            document.getElementById('clientName').value = '';
+            renderClientsTable();
+        }
+
+        // البحث بالاسم (فوري، بدون انتظار)
+        function renderClientsTable() {
+            const tbody = document.getElementById('clientsTable');
+            tbody.innerHTML = '';
+
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = appData.clients.filter(c => c.name.toLowerCase().includes(search));
+
+            filtered.forEach(client => {
+                const row = tbody.insertRow(0);
+                row.innerHTML = `
+                    <td style="font-size: 15px; font-weight: bold;">${client.name}</td>
+                    <td>${client.date}</td>
+                    <td>
+                        <button class="btn btn-green" onclick="openClient('${client.name}')">فتح</button>
+                        <button class="btn btn-red" onclick="deleteClient('${client.name}')">حذف</button>
+                    </td>
+                `;
+            });
+        }
+
+        function deleteClient(name) {
+            if (confirm(`هل أنت متأكد من حذف الزبون "${name}" وكل حساباته؟`)) {
+                appData.clients = appData.clients.filter(c => c.name !== name);
+                renderClientsTable();
+            }
+        }
+
+        function openClient(name) {
+            currentClientName = name;
+            const client = appData.clients.find(c => c.name === name);
+            if (!client) return;
+
+            document.getElementById('modalClientName').innerText = client.name;
+            document.getElementById('clientModal').style.display = 'flex';
+            renderTransactions(client);
+        }
+
+        function closeModal() {
+            document.getElementById('clientModal').style.display = 'none';
+        }
+
+        // إضافة ملاحظة
+        function addPureNote() {
+            const client = appData.clients.find(c => c.name === currentClientName);
+            if (!client) return;
+
+            const date = document.getElementById('txnDate').value;
+            const notes = document.getElementById('txnNotes').value.trim();
+            if (!notes) return;
+
+            client.transactions.push({
+                date: date || new Date().toLocaleDateString(),
+                amount: 0,
+                currency: "note",
+                type: "note",
+                notes: notes
+            });
+
+            document.getElementById('txnNotes').value = '';
+            renderTransactions(client);
+        }
+
+        // إضافة دولار
+        function addTransactionDollar() {
+            const client = appData.clients.find(c => c.name === currentClientName);
+            if (!client) return;
+
+            const date = document.getElementById('txnDate').value;
+            const amount = parseFloat(document.getElementById('txnAmountDollar').value) || 0;
+            const type = document.getElementById('txnTypeDollar').value;
+            const notes = document.getElementById('txnNotes').value || "-";
+
+            if (amount === 0) {
+                alert("الرجاء إدخال مبلغ دولار");
+                return;
+            }
+
+            client.transactions.push({
+                date: date || new Date().toLocaleDateString(),
+                amount: amount,
+                currency: "dollar",
+                type: type,
+                notes: notes
+            });
+
+            document.getElementById('txnAmountDollar').value = '';
+            document.getElementById('txnNotes').value = '';
+            renderTransactions(client);
+        }
+
+        // إضافة سوري
+        function addTransactionSyrian() {
+            const client = appData.clients.find(c => c.name === currentClientName);
+            if (!client) return;
+
+            const date = document.getElementById('txnDate').value;
+            const amount = parseFloat(document.getElementById('txnAmountSyrian').value) || 0;
+            const type = document.getElementById('txnTypeSyrian').value;
+            const notes = document.getElementById('txnNotes').value || "-";
+
+            if (amount === 0) {
+                alert("الرجاء إدخال مبلغ سوري");
+                return;
+            }
+
+            client.transactions.push({
+                date: date || new Date().toLocaleDateString(),
+                amount: amount,
+                currency: "syrian",
+                type: type,
+                notes: notes
+            });
+
+            document.getElementById('txnAmountSyrian').value = '';
+            document.getElementById('txnNotes').value = '';
+            renderTransactions(client);
+        }
+
+        // البحث بتاريخ واحد
+        function filterBySingleDate() {
+            const date = document.getElementById('searchDate').value;
+            if (!date) return;
+
+            isFiltered = true;
+            filterDate = date;
+
+            const client = appData.clients.find(c => c.name === currentClientName);
+            if (!client) return;
+            renderTransactions(client);
+        }
+
+        function resetDateFilter() {
+            isFiltered = false;
+            filterDate = "";
+            document.getElementById('searchDate').value = '';
+
+            const client = appData.clients.find(c => c.name === currentClientName);
+            if (!client) return;
+            renderTransactions(client);
+        }
+
+        function renderTransactions(client) {
+            const tbody = document.getElementById('transactionsTable');
+            tbody.innerHTML = '';
+
+            let totalForUsDollar = 0;
+            let totalForThemDollar = 0;
+            let totalForUsSyrian = 0;
+            let totalForThemSyrian = 0;
+
+            // فلترة حسب تاريخ واحد
+            const filteredTransactions = client.transactions.filter(tx => {
+                if (isFiltered) {
+                    const txDate = new Date(tx.date);
+                    const targetDate = new Date(filterDate);
+
+                    // مقارنة اليوم والشهر والسنة
+                    if (txDate.getFullYear() !== targetDate.getFullYear() ||
+                        txDate.getMonth() !== targetDate.getMonth() ||
+                        txDate.getDate() !== targetDate.getDate()) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            filteredTransactions.forEach((tx, index) => {
+                const row = tbody.insertRow(0);
+                
+                let currencyLabel = "";
+                let color = "";
+                
+                if (tx.currency === "dollar") {
+                    currencyLabel = "دولار";
+                    if (tx.type === "forUs") { color = "var(--green)"; totalForUsDollar += tx.amount; }
+                    else { color = "var(--red)"; totalForThemDollar += tx.amount; }
+                } else if (tx.currency === "syrian") {
+                    currencyLabel = "سوري";
+                    if (tx.type === "forUs") { color = "var(--green)"; totalForUsSyrian += tx.amount; }
+                    else { color = "var(--red)"; totalForThemSyrian += tx.amount; }
+                } else {
+                    currencyLabel = "ملاحظة";
+                    color = "var(--blue)";
+                }
+
+                row.innerHTML = `
+                    <td>${tx.date}</td>
+                    <td style="color: ${color}; font-size: 15px; font-weight: bold;">${formatNumber(tx.amount)}</td>
+                    <td>${currencyLabel}</td>
+                    <td style="color: ${color};">${tx.type === 'forUs' ? 'لنا' : (tx.type === 'forThem' ? 'له' : 'ملاحظة')}</td>
+                    <td style="font-size: 11px;">${tx.notes}</td>
+                    <td><button class="btn btn-red" onclick="deleteTransaction(${index})">حذف</button></td>
+                `;
+            });
+
+            document.getElementById('balanceForUsDollar').innerText = formatNumber(totalForUsDollar);
+            document.getElementById('balanceForThemDollar').innerText = formatNumber(totalForThemDollar);
+            document.getElementById('balanceTotalDollar').innerText = formatNumber(totalForUsDollar - totalForThemDollar);
+
+            document.getElementById('balanceForUsSyrian').innerText = formatNumber(totalForUsSyrian);
+            document.getElementById('balanceForThemSyrian').innerText = formatNumber(totalForThemSyrian);
+            document.getElementById('balanceTotalSyrian').innerText = formatNumber(totalForUsSyrian - totalForThemSyrian);
+        }
+
+        function deleteTransaction(index) {
+            const client = appData.clients.find(c => c.name === currentClientName);
+            if (!client) return;
+
+            const allTransactions = client.transactions;
+            if (isFiltered) {
+                // إيجاد الحركة الحقيقية في القائمة الكاملة
+                const filteredList = allTransactions.filter(tx => {
+                    const txDate = new Date(tx.date);
+                    const targetDate = new Date(filterDate);
+                    if (txDate.getFullYear() !== targetDate.getFullYear() ||
+                        txDate.getMonth() !== targetDate.getMonth() ||
+                        txDate.getDate() !== targetDate.getDate()) {
+                        return false;
+                    }
+                    return true;
+                });
+
+                const txToDelete = filteredList[index];
+                const realIndex = allTransactions.indexOf(txToDelete);
+                allTransactions.splice(realIndex, 1);
+            } else {
+                client.transactions.splice(index, 1);
+            }
+
+            renderTransactions(client);
+        }
+
+        // البحث بالاسم: يشتغل فوراً (Event)
+        document.getElementById('searchInput').addEventListener('input', renderClientsTable);
+
+        // زر Enter يضيف كل شيء
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (document.getElementById('clientModal').style.display === 'flex') {
+                    if (document.getElementById('txnNotes').value.trim() !== '') {
+                        addPureNote();
+                    } else if (document.getElementById('txnAmountDollar').value !== '') {
+                        addTransactionDollar();
+                    } else if (document.getElementById('txnAmountSyrian').value !== '') {
+                        addTransactionSyrian();
+                    }
+                } else {
+                    addClient();
+                }
+            }
+        });
+
+        renderClientsTable();
+    </script>
+</body>
+</html>
