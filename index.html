@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAQUT - نظام الصرافة الذكي</title>
+    <style>
+        :root {
+            --bg-color: #1e1e1e;
+            --card-bg: #2d2d2d;
+            --input-bg: #3a3a3a;
+            --green: #28a745;
+            --red: #dc3545;
+            --blue: #007bff;
+            --gray: #6c757d;
+            --text: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #333, #222);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--green);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-box {
+            font-size: 16px;
+            background: var(--card-bg);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        .new-day-btn {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .new-day-btn:hover { background: #c82333; }
+
+        .quick-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border-bottom: 4px solid var(--gray);
+        }
+
+        .stat-card.green { border-bottom-color: var(--green); }
+        .stat-card.red { border-bottom-color: var(--red); }
+
+        .stat-title { font-size: 13px; color: #aaa; margin-bottom: 5px; }
+        .stat-value { font-size: 22px; font-weight: bold; color: var(--text); }
+
+        .input-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .field {
+            display: flex;
+            align-items: center;
+            background: var(--input-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #444;
+            flex: 1;
+        }
+
+        .field input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            padding: 12px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .field-in { background: rgba(40, 167, 69, 0.2); border-color: var(--green); }
+        .field-in input { color: #9fe8b0; }
+        .field-in label { color: var(--green); font-weight: bold; padding: 0 10px; font-size: 14px; }
+
+        .field-out { background: rgba(220, 53, 69, 0.2); border-color: var(--red); }
+        .field-out input { color: #ffa3a3; }
+        .field-out label { color: var(--red); font-weight: bold; padding: 0 10px; font-size: 14px; }
+
+        .field-note { background: var(--input-bg); }
+        .field-note input { text-align: right; font-size: 14px; }
+
+        .field-text-amount {
+            width: 100%;
+            background: rgba(0, 123, 255, 0.1);
+            border: 1px dashed #007bff;
+            border-radius: 8px;
+            padding: 10px;
+            color: #9ec5fe;
+            font-size: 14px;
+            text-align: right;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 45px;
+        }
+
+        .save-btn {
+            width: 100%;
+            background: linear-gradient(90deg, var(--green), #218838);
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 15px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 8px rgba(40,167,69,0.3);
+        }
+
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(40,167,69,0.4); }
+        .save-btn:active { transform: translateY(1px); }
+
+        .table-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #222;
+            padding: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #aaa;
+            border-bottom: 1px solid #444;
+        }
+
+        td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            font-size: 15px;
+        }
+
+        td.text-amount-cell {
+            background: rgba(0, 123, 255, 0.05);
+            color: #9ec5fe;
+            font-size: 13px;
+            font-weight: bold;
+            font-family: 'Traditional Arabic', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        tr:hover td { background: rgba(255, 255, 255, 0.05); }
+        
+        .del-btn {
+            background: var(--red);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .del-btn:hover { background: #c82333; }
+
+        .totals-section { margin-top: 20px; }
+
+        .total-group {
+            display: flex;
+            justify-content: space-between;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .total-box { text-align: center; flex: 1; }
+        .total-box + .total-box { border-right: 1px solid #444; }
+
+        .total-title { font-size: 13px; color: #aaa; margin-bottom: 5px; }
+        .total-value { font-size: 20px; font-weight: bold; }
+
+        .green-text { color: var(--green); }
+        .red-text { color: var(--red); }
+        .white-text { color: var(--text); }
+
+        .no-data { padding: 30px; text-align: center; color: #666; font-size: 18px; }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">💱 YAQUT</div>
+        <div class="header-controls">
+            <div class="date-box" id="currentDate"></div>
+            <button class="new-day-btn" onclick="startNewDay()">🗑️ يوم جديد (تصفير)</button>
+        </div>
+    </div>
+
+    <div class="quick-stats">
+        <div class="stat-card green">
+            <div class="stat-title">اليوم - دخل سوري ₤</div>
+            <div class="stat-value" id="quickInLira">0</div>
+        </div>
+        <div class="stat-card red">
+            <div class="stat-title">اليوم - خرج سوري ₤</div>
+            <div class="stat-value" id="quickOutLira">0</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-title">اليوم - دخل دولار $</div>
+            <div class="stat-value" id="quickInDollar">0</div>
+        </div>
+        <div class="stat-card red">
+            <div class="stat-title">اليوم - خرج دولار $</div>
+            <div class="stat-value" id="quickOutDollar">0</div>
+        </div>
+    </div>
+
+    <div class="input-section">
+        <div class="input-row">
+            <div class="field">
+                <input type="date" id="dateInput" style="cursor: pointer;">
+            </div>
+            
+            <div class="field field-in">
+                <label>دخل سوري ₤</label>
+                <input type="number" id="inLira" placeholder="0" min="0">
+            </div>
+
+            <div class="field field-out">
+                <label>خرج سوري ₤</label>
+                <input type="number" id="outLira" placeholder="0" min="0">
+            </div>
+        </div>
+
+        <div class="input-row">
+            <div class="field field-in">
+                <label>دخل دولار $</label>
+                <input type="number" id="inDollar" placeholder="0" min="0">
+            </div>
+
+            <div class="field field-out">
+                <label>خرج دولار $</label>
+                <input type="number" id="outDollar" placeholder="0" min="0">
+            </div>
+
+            <div class="field field-note">
+                <input type="text" id="notes" placeholder="📝 ملاحظات... (اختياري)">
+            </div>
+        </div>
+
+        <!-- حقل المبلغ كتابةً: يعرض الليرة والدولار معاً -->
+        <div class="field-text-amount" id="amountInWordsDisplay">
+            المبلغ كتابةً: <strong>صفر ليرة سورية لا غير</strong>
+        </div>
+
+        <button class="save-btn" onclick="addTransaction()">➕ تسجيل الحركة (Enter)</button>
+    </div>
+
+    <div class="table-section">
+        <table>
+            <thead>
+                <tr>
+                    <th>التاريخ</th>
+                    <th>دخل سوري ₤</th>
+                    <th>خرج سوري ₤</th>
+                    <th>دخل دولار $</th>
+                    <th>خرج دولار $</th>
+                    <th style="width: 300px;">المبلغ كتابةً (سوري / دولار)</th>
+                    <th>ملاحظات</th>
+                    <th>حذف</th>
+                </tr>
+            </thead>
+            <tbody id="transactionsTable">
+                <tr id="emptyMsg"><td colspan="8" class="no-data">📭 لا توجد حركات اليوم</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="totals-section">
+        <div class="total-group">
+            <div class="total-box">
+                <div class="total-title">إجمالي دخل سوري ₤</div>
+                <div class="total-value green-text" id="tInLira">0</div>
+            </div>
+            <div class="total-box">
+                <div class="total-title">إجمالي خرج سوري ₤</div>
+                <div class="total-value red-text" id="tOutLira">0</div>
+            </div>
+            <div class="total-box">
+                <div class="total-title">صافي السوري ₤</div>
+                <div class="total-value white-text" id="nLira">0</div>
+            </div>
+        </div>
+
+        <div class="total-group">
+            <div class="total-box">
+                <div class="total-title">إجمالي دخل دولار $</div>
+                <div class="total-value green-text" id="tInDollar">0</div>
+            </div>
+            <div class="total-box">
+                <div class="total-title">إجمالي خرج دولار $</div>
+                <div class="total-value red-text" id="tOutDollar">0</div>
+            </div>
+            <div class="total-box">
+                <div class="total-title">صافي الدولار $</div>
+                <div class="total-value white-text" id="nDollar">0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('currentDate').innerText = `📅 ${new Date().toLocaleDateString()}`;
+        document.getElementById('dateInput').value = today;
+
+        /* تحويل الأرقام لكلمات */
+        function numberToArabicWords(num) {
+            if (num === 0) return "صفر";
+            
+            const ones = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
+            const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+            const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
+            const scales = ["", "ألف", "مليون", "مليار", "تريليون"];
+
+            if (num < 20) return ones[num];
+            if (num < 100) return (tens[Math.floor(num / 10)] + (num % 10 !== 0 ? " و" + ones[num % 10] : ""));
+            if (num < 1000) return (hundreds[Math.floor(num / 100)] + (num % 100 !== 0 ? " و" + numberToArabicWords(num % 100) : ""));
+
+            for (let i = scales.length - 1; i >= 1; i--) {
+                const divisor = Math.pow(1000, i);
+                if (num >= divisor) {
+                    const quotient = Math.floor(num / divisor);
+                    const remainder = num % divisor;
+                    
+                    let words = numberToArabicWords(quotient) + " " + scales[i];
+                    if (quotient === 1 && scales[i] === "ألف") words = "ألف";
+                    if (quotient === 2 && scales[i] === "ألف") words = "ألفان";
+                    if (quotient === 1 && scales[i] === "مليون") words = "مليون";
+                    if (quotient === 2 && scales[i] === "مليون") words = "مليونان";
+                    
+                    if (remainder > 0) words += " و" + numberToArabicWords(remainder);
+                    return words;
+                }
+            }
+            return "";
+        }
+
+        /* حساب المبلغ كتابةً لليرة والدولار معاً */
+        function updateAmountInWords() {
+            const inLira = parseFloat(document.getElementById('inLira').value) || 0;
+            const outLira = parseFloat(document.getElementById('outLira').value) || 0;
+            const inDollar = parseFloat(document.getElementById('inDollar').value) || 0;
+            const outDollar = parseFloat(document.getElementById('outDollar').value) || 0;
+
+            const netLira = inLira - outLira;
+            const netDollar = inDollar - outDollar;
+
+            const liraWords = numberToArabicWords(Math.abs(netLira));
+            const liraSign = netLira < 0 ? "سالب " : "";
+
+            const dollarWords = numberToArabicWords(Math.abs(netDollar));
+            const dollarSign = netDollar < 0 ? "سالب " : "";
+
+            let displayText = "";
+            
+            // إذا في دخل أو خرج بالليرة
+            if (netLira !== 0) {
+                displayText += `<strong>${liraSign}${liraWords} ليرة سورية لا غير</strong>`;
+            }
+            
+            // إذا في دخل أو خرج بالدولار
+            if (netDollar !== 0) {
+                if (displayText !== "") displayText += " و ";
+                displayText += `<strong>${dollarSign}${dollarWords} دولار أمريكي لا غير</strong>`;
+            }
+            
+            // إذا ما كتب شي
+            if (displayText === "") {
+                displayText = `<strong>صفر ليرة سورية لا غير</strong>`;
+            }
+
+            document.getElementById('amountInWordsDisplay').innerHTML = `المبلغ كتابةً: ${displayText}`;
+        }
+
+        document.getElementById('inLira').addEventListener('input', updateAmountInWords);
+        document.getElementById('outLira').addEventListener('input', updateAmountInWords);
+        document.getElementById('inDollar').addEventListener('input', updateAmountInWords);
+        document.getElementById('outDollar').addEventListener('input', updateAmountInWords);
+
+        function saveData() {
+            const tbody = document.getElementById('transactionsTable');
+            const rows = [];
+            for (let i = 0; i < tbody.rows.length; i++) {
+                const cells = tbody.rows[i].cells;
+                rows.push({
+                    date: cells[0].innerText,
+                    inLira: cells[1].innerText,
+                    outLira: cells[2].innerText,
+                    inDollar: cells[3].innerText,
+                    outDollar: cells[4].innerText,
+                    text: cells[5].innerText,
+                    notes: cells[6].innerText
+                });
+            }
+            localStorage.setItem('yaqutTransactions', JSON.stringify(rows));
+            updateTotals();
+        }
+
+        function loadData() {
+            const stored = JSON.parse(localStorage.getItem('yaqutTransactions'));
+            const tbody = document.getElementById('transactionsTable');
+            tbody.innerHTML = ''; 
+
+            if (stored && stored.length > 0) {
+                stored.forEach(item => {
+                    const newRow = tbody.insertRow(0);
+                    newRow.innerHTML = `
+                        <td>${item.date}</td>
+                        <td style="color: var(--green); font-weight: bold;">${item.inLira}</td>
+                        <td style="color: var(--red); font-weight: bold;">${item.outLira}</td>
+                        <td style="color: var(--green); font-weight: bold;">${item.inDollar}</td>
+                        <td style="color: var(--red); font-weight: bold;">${item.outDollar}</td>
+                        <td class="text-amount-cell">${item.text}</td>
+                        <td>${item.notes}</td>
+                        <td><button class="del-btn" onclick="deleteRow(this)">✖</button></td>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr id="emptyMsg"><td colspan="8" class="no-data">📭 لا توجد حركات اليوم</td></tr>';
+            }
+            updateTotals();
+        }
+
+        function addTransaction() {
+            const date = document.getElementById('dateInput').value;
+            const inLira = parseFloat(document.getElementById('inLira').value) || 0;
+            const outLira = parseFloat(document.getElementById('outLira').value) || 0;
+            const inDollar = parseFloat(document.getElementById('inDollar').value) || 0;
+            const outDollar = parseFloat(document.getElementById('outDollar').value) || 0;
+            const notes = document.getElementById('notes').value || "-";
+
+            if (inLira === 0 && outLira === 0 && inDollar === 0 && outDollar === 0) {
+                alert("الرجاء إدخال قيمة للدخل أو الخرج!");
+                return;
+            }
+
+            const amountInWords = document.getElementById('amountInWordsDisplay').innerText.replace("المبلغ كتابةً:", "").trim();
+
+            const emptyMsg = document.getElementById('emptyMsg');
+            if (emptyMsg) emptyMsg.remove();
+
+            const table = document.getElementById('transactionsTable');
+            const newRow = table.insertRow(0);
+            
+            newRow.innerHTML = `
+                <td>${date}</td>
+                <td style="color: var(--green); font-weight: bold;">${inLira.toLocaleString()}</td>
+                <td style="color: var(--red); font-weight: bold;">${outLira.toLocaleString()}</td>
+                <td style="color: var(--green); font-weight: bold;">${inDollar.toLocaleString()}</td>
+                <td style="color: var(--red); font-weight: bold;">${outDollar.toLocaleString()}</td>
+                <td class="text-amount-cell">${amountInWords}</td>
+                <td>${notes}</td>
+                <td><button class="del-btn" onclick="deleteRow(this)">✖</button></td>
+            `;
+
+            document.getElementById('inLira').value = '';
+            document.getElementById('outLira').value = '';
+            document.getElementById('inDollar').value = '';
+            document.getElementById('outDollar').value = '';
+            document.getElementById('notes').value = '';
+            updateAmountInWords();
+            
+            document.getElementById('inLira').focus();
+
+            saveData();
+        }
+
+        function deleteRow(button) {
+            const row = button.parentNode.parentNode;
+            row.remove();
+            saveData();
+
+            if (document.getElementById('transactionsTable').rows.length === 0) {
+                document.getElementById('transactionsTable').innerHTML = '<tr id="emptyMsg"><td colspan="8" class="no-data">📭 لا توجد حركات اليوم</td></tr>';
+            }
+        }
+
+        function startNewDay() {
+            if (confirm("هل أنت متأكد؟ سيتم حذف جميع حركات اليوم الحالي نهائياً!")) {
+                localStorage.removeItem('yaqutTransactions');
+                document.getElementById('transactionsTable').innerHTML = '<tr id="emptyMsg"><td colspan="8" class="no-data">📭 لا توجد حركات اليوم</td></tr>';
+                
+                document.getElementById('quickInLira').innerText = "0";
+                document.getElementById('quickOutLira').innerText = "0";
+                document.getElementById('quickInDollar').innerText = "0";
+                document.getElementById('quickOutDollar').innerText = "0";
+                
+                document.getElementById('tInLira').innerText = "0";
+                document.getElementById('tOutLira').innerText = "0";
+                document.getElementById('nLira').innerText = "0";
+                
+                document.getElementById('tInDollar').innerText = "0";
+                document.getElementById('tOutDollar').innerText = "0";
+                document.getElementById('nDollar').innerText = "0";
+
+                const newToday = new Date().toISOString().split('T')[0];
+                document.getElementById('dateInput').value = newToday;
+                document.getElementById('currentDate').innerText = `📅 ${new Date().toLocaleDateString()}`;
+
+                alert("تم بدء يوم جديد بنجاح! السجل نظيف.");
+            }
+        }
+
+        function formatNumber(num) {
+            return num.toLocaleString();
+        }
+
+        function updateTotals() {
+            let tInLira = 0, tOutLira = 0, tInDollar = 0, tOutDollar = 0;
+            const rows = document.getElementById('transactionsTable').rows;
+
+            for (let i = 0; i < rows.length; i++) {
+                tInLira += parseFloat(rows[i].cells[1].innerText.replace(/,/g, '')) || 0;
+                tOutLira += parseFloat(rows[i].cells[2].innerText.replace(/,/g, '')) || 0;
+                tInDollar += parseFloat(rows[i].cells[3].innerText.replace(/,/g, '')) || 0;
+                tOutDollar += parseFloat(rows[i].cells[4].innerText.replace(/,/g, '')) || 0;
+            }
+
+            document.getElementById('quickInLira').innerText = formatNumber(tInLira);
+            document.getElementById('quickOutLira').innerText = formatNumber(tOutLira);
+            document.getElementById('quickInDollar').innerText = formatNumber(tInDollar);
+            document.getElementById('quickOutDollar').innerText = formatNumber(tOutDollar);
+
+            document.getElementById('tInLira').innerText = formatNumber(tInLira);
+            document.getElementById('tOutLira').innerText = formatNumber(tOutLira);
+            document.getElementById('nLira').innerText = formatNumber(tInLira - tOutLira);
+
+            document.getElementById('tInDollar').innerText = formatNumber(tInDollar);
+            document.getElementById('tOutDollar').innerText = formatNumber(tOutDollar);
+            document.getElementById('nDollar').innerText = formatNumber(tInDollar - tOutDollar);
+        }
+
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addTransaction();
+            }
+        });
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
