@@ -65,7 +65,7 @@
         .btn-green { background: var(--green); }
         .btn-red { background: var(--red); }
 
-        /* منطقة البحث والإضافة */
+        /* منطقة إضافة زبون + بحث */
         .add-search-section {
             background: var(--card);
             border-radius: 0;
@@ -108,18 +108,6 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: bold;
-        }
-
-        /* لاحظ: الخانات تم جعلها بشكل أفقي أكثر لتسهيل استخدام Enter */
-        .focus-input {
-            width: 100%;
-            background: var(--input-bg);
-            border: none;
-            outline: none;
-            color: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 15px;
         }
 
         .search-box {
@@ -297,12 +285,12 @@
     <div class="top-bar">
         <div class="title">💼 دفتر العملاء والحسابات</div>
         <div class="actions">
-            <button class="btn btn-red" onclick="exportData()">حفظ نسخة</button>
-            <button class="btn btn-green" onclick="importData()">تحميل نسخة</button>
+            <button class="btn btn-red" onclick="exportData()">📥 حفظ نسخة</button>
+            <button class="btn btn-green" onclick="importData()">📂 تحميل نسخة</button>
         </div>
     </div>
 
-    <!-- منطقة إضافة زبون + بحث (نفس المكان، واضح) -->
+    <!-- منطقة إضافة زبون + بحث -->
     <div class="add-search-section">
         <div class="fields-row">
             <div class="field">
@@ -426,6 +414,7 @@
     </div>
 
     <script>
+        // هذه هي البيانات اللي بتنحفظ وتتقرأ
         let appData = {
             clients: []
         };
@@ -438,17 +427,25 @@
             return num.toLocaleString('en-US');
         }
 
+        // ******** حفظ تلقائي (LocalStorage) + حفظ نسخة ********
+        function saveToLocalStorage() {
+            localStorage.setItem('clientsAppData', JSON.stringify(appData));
+        }
+
+        // حفظ نسخة على الجهاز (JSON)
         function exportData() {
             const dataStr = JSON.stringify(appData);
             const blob = new Blob([dataStr], {type: "application/json"});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "workbook.json";
+            a.download = "clients_workbook.json";
             a.click();
             URL.revokeObjectURL(url);
+            alert("تم حفظ النسخة الاحتياطية بنجاح!");
         }
 
+        // استرجاع النسخة (JSON)
         function importData() {
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
@@ -459,11 +456,22 @@
                 reader.onload = event => {
                     appData = JSON.parse(event.target.result);
                     renderClientsTable();
+                    saveToLocalStorage();
+                    alert("تم استرجاع النسخة بنجاح!");
                 };
                 reader.readAsText(file);
             };
             fileInput.click();
         }
+
+        // تحميل البيانات عند فتح الصفحة
+        window.onload = function() {
+            const saved = localStorage.getItem('clientsAppData');
+            if (saved) {
+                appData = JSON.parse(saved);
+                renderClientsTable();
+            }
+        };
 
         // إضافة زبون
         function addClient() {
@@ -483,9 +491,10 @@
 
             document.getElementById('clientName').value = '';
             renderClientsTable();
+            saveToLocalStorage(); // حفظ تلقائي
         }
 
-        // البحث بالاسم (فوري، بدون انتظار)
+        // البحث بالاسم (فوري)
         function renderClientsTable() {
             const tbody = document.getElementById('clientsTable');
             tbody.innerHTML = '';
@@ -510,6 +519,7 @@
             if (confirm(`هل أنت متأكد من حذف الزبون "${name}" وكل حساباته؟`)) {
                 appData.clients = appData.clients.filter(c => c.name !== name);
                 renderClientsTable();
+                saveToLocalStorage();
             }
         }
 
@@ -546,6 +556,7 @@
 
             document.getElementById('txnNotes').value = '';
             renderTransactions(client);
+            saveToLocalStorage();
         }
 
         // إضافة دولار
@@ -574,6 +585,7 @@
             document.getElementById('txnAmountDollar').value = '';
             document.getElementById('txnNotes').value = '';
             renderTransactions(client);
+            saveToLocalStorage();
         }
 
         // إضافة سوري
@@ -602,6 +614,7 @@
             document.getElementById('txnAmountSyrian').value = '';
             document.getElementById('txnNotes').value = '';
             renderTransactions(client);
+            saveToLocalStorage();
         }
 
         // البحث بتاريخ واحد
@@ -642,7 +655,6 @@
                     const txDate = new Date(tx.date);
                     const targetDate = new Date(filterDate);
 
-                    // مقارنة اليوم والشهر والسنة
                     if (txDate.getFullYear() !== targetDate.getFullYear() ||
                         txDate.getMonth() !== targetDate.getMonth() ||
                         txDate.getDate() !== targetDate.getDate()) {
@@ -696,7 +708,6 @@
 
             const allTransactions = client.transactions;
             if (isFiltered) {
-                // إيجاد الحركة الحقيقية في القائمة الكاملة
                 const filteredList = allTransactions.filter(tx => {
                     const txDate = new Date(tx.date);
                     const targetDate = new Date(filterDate);
@@ -716,9 +727,10 @@
             }
 
             renderTransactions(client);
+            saveToLocalStorage();
         }
 
-        // البحث بالاسم: يشتغل فوراً (Event)
+        // البحث بالاسم: يشتغل فوراً
         document.getElementById('searchInput').addEventListener('input', renderClientsTable);
 
         // زر Enter يضيف كل شيء
